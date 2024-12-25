@@ -16,13 +16,25 @@ def powerMethod(matrix, matrixSize, initialValue):
 
 def powerMethodAnalysis(matrix, matrixSize, initialValue):
     eigenValue, eigenVector = powerMethod(matrix,matrixSize,initialValue)
-    matrixDeflated = matrix - eigenValue * num.dot(eigenVector, eigenVector.transpose())
+    matrixDeflated = matrix - eigenValue * num.dot(eigenVector, eigenVector.transpose())    
     eigenValue2nd, eigenVector2nd = powerMethod(matrixDeflated, matrixSize, initialValue)
     convergenceRate = abs(eigenValue/eigenValue2nd)
     return eigenValue, eigenVector, convergenceRate
 
+def QRDecomposition(matrix, matrixSize, max_iterations=1000, tolerance=1e-10):
+    eigenVector = num.eye(matrixSize)
 
+    for _ in range(max_iterations):
+        Q, R = num.linalg.qr(matrix)
+        Ak = num.dot(R, Q)
+        eigenVector = num.dot(eigenVector, Q)
+        
+        off_diagonal_norm = num.linalg.norm(Ak - num.diag(num.diagonal(Ak)))
+        if off_diagonal_norm < tolerance:
+            break
 
+    eigenValues = num.diag(Ak)
+    return eigenValues, eigenVector
 
 matrixSize = int(input("Enter the matrix size: "))
 matrix = num.empty((matrixSize,matrixSize), int)
@@ -49,11 +61,22 @@ startTime = time.time()
 eigenValue, eigenVector, convergenceRate = powerMethodAnalysis(matrix,matrixSize,initialValue)
 endTime = time.time()
 
+print("Power Method: \n")
 print("EigenValue is", eigenValue)
 print("Eigen Vector is")
 print(eigenVector)
 print("Rate of Convergence:", convergenceRate)
-print("Computational Time: ", endTime - startTime)
+print("Computational Time: \n\n", endTime - startTime)
+
+startTime = time.time()
+eigenValue, eigenVector = QRDecomposition(matrix,matrixSize)
+endTime = time.time()
+
+print("QR Decomposition: \n")
+print("EigenValue is", eigenValue)
+print("Eigen Vector is")
+print(eigenVector)
+print("Computational Time: \n\n", endTime - startTime)
 
 
 
