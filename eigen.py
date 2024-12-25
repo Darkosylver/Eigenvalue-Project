@@ -21,20 +21,22 @@ def powerMethodAnalysis(matrix, matrixSize, initialValue):
     convergenceRate = abs(eigenValue/eigenValue2nd)
     return eigenValue, eigenVector, convergenceRate
 
-def QRDecomposition(matrix, matrixSize, max_iterations=1000, tolerance=1e-10):
-    eigenVector = num.eye(matrixSize)
-    matrixCopy = matrix.copy()
+def  QRDecomposition(A, size, max_iterations=1000, tolerance=1e-10):
+    Ak = A.copy()
+    Q_total = np.eye(size)
+
     for _ in range(max_iterations):
-        Q, R = num.linalg.qr(matrixCopy)
-        matrixCopy = num.dot(R, Q)
-        eigenVector = num.dot(eigenVector, Q)
+        Q, R = np.linalg.qr(Ak)
+        Ak = np.dot(R, Q)
+        Q_total = np.dot(Q_total, Q)
         
-        off_diagonal_norm = num.linalg.norm(matrixCopy - num.diag(num.diagonal(matrixCopy)))
+        off_diagonal_norm = np.linalg.norm(Ak - np.diag(np.diagonal(Ak)))
         if off_diagonal_norm < tolerance:
             break
 
-    eigenValues = num.diag(matrixCopy)
-    return eigenValues, eigenVector
+    eigenvalues = np.diag(Ak)
+    eigenvectors = Q_total
+    return eigenvalues, eigenvectors
 
 matrixSize = int(input("Enter the matrix size: "))
 matrix = num.empty((matrixSize,matrixSize), int)
