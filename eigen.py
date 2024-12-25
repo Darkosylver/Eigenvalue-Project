@@ -2,6 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 
+# Generate a large, stiff matrix
+def generate_stiff_matrix(size):
+    A = np.random.rand(size, size) * 10
+    A = (A + A.T) / 2  # Make the matrix symmetric (ensures real eigenvalues)
+    A += size * np.eye(size)  # Add diagonal dominance to make it stiff
+    return A
 
 # Power Iteration method
 def power_iteration(A, max_iterations=1000, tolerance=1e-10):
@@ -27,13 +33,13 @@ def power_iteration(A, max_iterations=1000, tolerance=1e-10):
 
 
 # Second largest eigenvalue using deflation
-def second_largest_eigenvalue(A, largest_eigenvalue, largest_eigenvector, max_iterations=1000, tolerance=1e-10):
+def second_largest_eigenvalue(A, largest_eigenvalue, largest_eigenvector, max_iterations=5, tolerance=1e-3):
     A_deflated = A - largest_eigenvalue * np.outer(largest_eigenvector, largest_eigenvector)
     return power_iteration(A_deflated, max_iterations, tolerance)
 
 
 # QR Decomposition method
-def qr_algorithm(A, max_iterations=1000, tolerance=1e-10):
+def qr_algorithm(A, max_iterations=5, tolerance=1e-3):
     n = A.shape[0]
     Ak = A.copy()
     Q_total = np.eye(n)
@@ -70,6 +76,9 @@ def compare_methods(A):
     qr_eigenvalues, qr_eigenvectors = qr_algorithm(A)
     qr_time = time.time() - start_time
 
+    # Exact Solution
+    exact_eigenvalues, exact_eigenvectors = np.linalg.eig(A)
+
     # Results
     print("Power Iteration Results:")
     print(f"Largest Eigenvalue: {largest_eigenvalue}")
@@ -78,8 +87,12 @@ def compare_methods(A):
     print(f"Time Taken (Second Largest): {power_time_second:.4f} seconds")
 
     print("\nQR Decomposition Results:")
-    print(f"Eigenvalues: {qr_eigenvalues}")
+    print(f"Eigenvalues: {sorted(qr_eigenvalues)}")
     print(f"Time Taken: {qr_time:.4f} seconds")
+
+    print("\n Exact Solution Result:")
+    print(f"Eigenvalues: {sorted(exact_eigenvalues)}")
+    print(f"Eigenvectors: {exact_eigenvectors}")
 
     # Visualizations
     plt.figure(figsize=(10, 6))
@@ -106,15 +119,16 @@ def compare_methods(A):
 
 # Experiment with user-provided matrix and size
 def experiment():
-    size = int(input("Enter the size of the matrix: "))
-    print("Enter the elements of the matrix row by row (space-separated):")
-    matrix = []
-    for _ in range(size):
-        row = list(map(float, input().split()))
-        matrix.append(row)
-    A = np.array(matrix)
-
-    print(f"\nMatrix (Size: {A.shape[0]}):")
+    # size = int(input("Enter the size of the matrix: "))
+    # print("Enter the elements of the matrix row by row (space-separated):")
+    # matrix = []
+    # for _ in range(size):
+    #     row = list(map(float, input().split()))
+    #     matrix.append(row)
+    # A = np.array(matrix)
+    #
+    # print(f"\nMatrix (Size: {A.shape[0]}):")
+    A = generate_stiff_matrix(500)
     compare_methods(A)
 
 
