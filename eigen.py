@@ -1,102 +1,123 @@
-import numpy as num
-import time as time
+import numpy as np
+import matplotlib.pyplot as plt
+import time
 
-def powerMethod(matrix, matrixSize, initialValue, max_iterations=1000, tolerance=1e-10):
-    eigenVector = num.empty((1,matrixSize), float)
-    eigenValue = 0
-    count = 1
-    while not num.array_equal(eigenVector,initialValue) or count <= max_iterations:
-        if count != 1:
-            initialValue = eigenVector
-        eigenVector = num.dot(matrix,initialValue)
-        eigenValue = num.max(eigenVector)
-        eigenVector = num.divide(eigenVector, eigenValue)
-        count+=1
-        if (num.linalg.norm(eigenVector - initialValue) < tolerance):
-            break
-    return eigenValue, eigenVector
 
-def powerMethodAnalysis(matrix, matrixSize, initialValue):
-    eigenValue, eigenVector = powerMethod(matrix,matrixSize,initialValue)
-    matrixDeflated = matrix - eigenValue * num.dot(eigenVector, eigenVector.transpose())    
-    eigenValue2nd, eigenVector2nd = powerMethod(matrixDeflated, matrixSize, initialValue)
-    print("Second largets: ", eigenValue2nd)
-    convergenceRate = abs(eigenValue/eigenValue2nd)
-    return eigenValue, eigenVector, convergenceRate
-
-def  QRDecomposition(A, size, max_iterations=1000, tolerance=1e-10):
-    Ak = A.copy()
-    Q_total = num.eye(size)
+# Power Iteration method
+def power_iteration(A, max_iterations=1000, tolerance=1e-10):
+    n = A.shape[0]
+    b = np.random.rand(n)
+    b = b / np.linalg.norm(b)
+    convergence_rates = []
 
     for _ in range(max_iterations):
-        Q, R = num.linalg.qr(Ak)
-        Ak = num.dot(R, Q)
-        Q_total = num.dot(Q_total, Q)
-        
-        off_diagonal_norm = num.linalg.norm(Ak - num.diag(num.diagonal(Ak)))
+        b_next = np.dot(A, b)
+        b_next = b_next / np.linalg.norm(b_next)
+
+        convergence_rate = np.linalg.norm(b_next - b)
+        convergence_rates.append(convergence_rate)
+
+        if convergence_rate < tolerance:
+            break
+        b = b_next
+
+    eigenvalue = np.dot(b.T, np.dot(A, b))
+    eigenvector = b
+    return eigenvalue, eigenvector, convergence_rates
+
+
+# Second largest eigenvalue using deflation
+def second_largest_eigenvalue(A, largest_eigenvalue, largest_eigenvector, max_iterations=1000, tolerance=1e-10):
+    A_deflated = A - largest_eigenvalue * np.outer(largest_eigenvector, largest_eigenvector)
+    return power_iteration(A_deflated, max_iterations, tolerance)
+
+
+# QR Decomposition method
+def qr_algorithm(A, max_iterations=1000, tolerance=1e-10):
+    n = A.shape[0]
+    Ak = A.copy()
+    Q_total = np.eye(n)
+
+    for _ in range(max_iterations):
+        Q, R = np.linalg.qr(Ak)
+        Ak = np.dot(R, Q)
+        Q_total = np.dot(Q_total, Q)
+
+        off_diagonal_norm = np.linalg.norm(Ak - np.diag(np.diagonal(Ak)))
         if off_diagonal_norm < tolerance:
             break
 
-    eigenvalues = num.diag(Ak)
-    
-    count = 0
-    convergenceRate = num.empty((1, size-1), float)
-    while count < size-1:
-        convergenceRate[0][count] = abs(eigenvalues[count+1]/eigenvalues[count])
-        count+=1
+    eigenvalues = np.diag(Ak)
     eigenvectors = Q_total
-    return eigenvalues, eigenvectors, convergenceRate
-
-matrixSize = int(input("Enter the matrix size: "))
-matrix = num.empty((matrixSize,matrixSize), float)
-
-print("Enter each entry in a single line, separate numbers by space: ")
-
-entries = list(map(float, input().split()))
-
-matrix = num.array(entries).reshape(matrixSize, matrixSize)
-
-print(matrix)
-
-initialValue = num.empty((1,matrixSize), float)
-
-print("Enter Initial Value, same as the matrix: ")
-
-entries = list(map(float, input().split()))
-
-initialValue = num.array(entries).reshape(matrixSize,1)
-
-print(initialValue)
-
-startTime = time.time()
-eigenValue, eigenVector, convergenceRate = powerMethodAnalysis(matrix,matrixSize,initialValue)
-endTime = time.time()
-
-print("Power Method: \n")
-print("EigenValue is", eigenValue)
-print("Eigen Vector is")
-print(eigenVector)
-print("Rate of Convergence:", convergenceRate)
-print("Computational Time: ", endTime - startTime)
-print("\n\n")
-
-startTime = time.time()
-eigenValue, eigenVector, convergenceRate = QRDecomposition(matrix,matrixSize)
-endTime = time.time()
-
-print("QR Decomposition: \n")
-print("EigenValue is", eigenValue)
-print("Eigen Vector is")
-print(eigenVector)
-print("Rate of Convergence:", convergenceRate)
-print("Computational Time: ", endTime - startTime)
-print("\n\n")
+    return eigenvalues, eigenvectors
 
 
+# Comparison of methods
+def compare_methods(A):
+    # Power Iteration for largest eigenvalue
+    start_time = time.time()
+    largest_eigenvalue, largest_eigenvector, largest_convergence = power_iteration(A)
+    power_time_largest = time.time() - start_time
+
+    # Power Iteration for second largest eigenvalue
+    start_time = time.time()
+    second_eigenvalue, second_eigenvector, second_convergence = second_largest_eigenvalue(A, largest_eigenvalue,
+                                                                                          largest_eigenvector)
+    power_time_second = time.time() - start_time
+
+    # QR Decomposition
+    start_time = time.time()
+    qr_eigenvalues, qr_eigenvectors = qr_algorithm(A)
+    qr_time = time.time() - start_time
+
+    # Results
+    print("Power Iteration Results:")
+    print(f"Largest Eigenvalue: {largest_eigenvalue}")
+    print(f"Second Largest Eigenvalue: {second_eigenvalue}")
+    print(f"Time Taken (Largest): {power_time_largest:.4f} seconds")
+    print(f"Time Taken (Second Largest): {power_time_second:.4f} seconds")
+
+    print("\nQR Decomposition Results:")
+    print(f"Eigenvalues: {qr_eigenvalues}")
+    print(f"Time Taken: {qr_time:.4f} seconds")
+
+    # Visualizations
+    plt.figure(figsize=(10, 6))
+    plt.bar(range(len(qr_eigenvalues)), qr_eigenvalues, alpha=0.7, label='QR Eigenvalues')
+    plt.axhline(y=largest_eigenvalue, color='r', linestyle='--', label='Power Iteration Largest Eigenvalue')
+    plt.axhline(y=second_eigenvalue, color='g', linestyle='--', label='Power Iteration Second Largest Eigenvalue')
+    plt.xlabel('Index')
+    plt.ylabel('Eigenvalue')
+    plt.title('Eigenvalue Comparison')
+    plt.legend()
+    plt.show()
+
+    # Convergence Rates
+    plt.figure(figsize=(10, 6))
+    plt.plot(largest_convergence, label='Largest Eigenvalue Convergence')
+    plt.plot(second_convergence, label='Second Largest Eigenvalue Convergence')
+    plt.yscale('log')
+    plt.xlabel('Iteration')
+    plt.ylabel('Convergence Rate')
+    plt.title('Convergence Rates of Power Iteration')
+    plt.legend()
+    plt.show()
 
 
+# Experiment with user-provided matrix and size
+def experiment():
+    size = int(input("Enter the size of the matrix: "))
+    print("Enter the elements of the matrix row by row (space-separated):")
+    matrix = []
+    for _ in range(size):
+        row = list(map(float, input().split()))
+        matrix.append(row)
+    A = np.array(matrix)
+
+    print(f"\nMatrix (Size: {A.shape[0]}):")
+    compare_methods(A)
 
 
-
-
-
+# Run the experiment
+if __name__ == "__main__":
+    experiment()
