@@ -1,8 +1,10 @@
 import sympy as sym
 import matplotlib as plot
 import numpy as num
+import time as time
 
 def powerMethod(matrix, matrixSize, initialValue):
+    startTime = time.process_time   
     eigenVector = num.empty((1,matrixSize), float)
     eigenValue = 0
     count = 1
@@ -13,10 +15,12 @@ def powerMethod(matrix, matrixSize, initialValue):
         eigenValue = num.max(eigenVector)
         eigenVector = num.divide(eigenVector, eigenValue)
         count+=1
+    endTime = time.process_time()
     print("EigenValue is", eigenValue)
     print("Eigen Vector is")
     print(eigenVector)
     print("Convergence speed (Number of iterations):", count)
+    print("Computational Time: ", endTime - startTime)
 
 matrixSize = int(input("Enter the matrix size: "))
 matrix = num.empty((matrixSize,matrixSize), int)
