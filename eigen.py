@@ -23,17 +23,17 @@ def powerMethodAnalysis(matrix, matrixSize, initialValue):
 
 def QRDecomposition(matrix, matrixSize, max_iterations=1000, tolerance=1e-10):
     eigenVector = num.eye(matrixSize)
-
+    matrixCopy = matrix.copy()
     for _ in range(max_iterations):
-        Q, R = num.linalg.qr(matrix)
-        Ak = num.dot(R, Q)
+        Q, R = num.linalg.qr(matrixCopy)
+        matrixCopy = num.dot(R, Q)
         eigenVector = num.dot(eigenVector, Q)
         
-        off_diagonal_norm = num.linalg.norm(Ak - num.diag(num.diagonal(Ak)))
+        off_diagonal_norm = num.linalg.norm(matrixCopy - num.diag(num.diagonal(matrixCopy)))
         if off_diagonal_norm < tolerance:
             break
 
-    eigenValues = num.diag(Ak)
+    eigenValues = num.diag(matrixCopy)
     return eigenValues, eigenVector
 
 matrixSize = int(input("Enter the matrix size: "))
