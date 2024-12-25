@@ -41,7 +41,7 @@ def  QRDecomposition(A, size, max_iterations=1000, tolerance=1e-10):
     
     count = 0
     convergenceRate = num.empty((1, size-1), float)
-    while count < 4:
+    while count < size-1:
         convergenceRate[0][count] = abs(eigenvalues[count+1]/eigenvalues[count])
         count+=1
     eigenvectors = Q_total
