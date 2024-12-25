@@ -66,7 +66,8 @@ print("EigenValue is", eigenValue)
 print("Eigen Vector is")
 print(eigenVector)
 print("Rate of Convergence:", convergenceRate)
-print("Computational Time: \n\n", endTime - startTime)
+print("Computational Time: ", endTime - startTime)
+print("\n\n")
 
 startTime = time.time()
 eigenValue, eigenVector = QRDecomposition(matrix,matrixSize)
@@ -76,7 +77,8 @@ print("QR Decomposition: \n")
 print("EigenValue is", eigenValue)
 print("Eigen Vector is")
 print(eigenVector)
-print("Computational Time: \n\n", endTime - startTime)
+print("Computational Time: ", endTime - startTime)
+print("\n\n")
 
 
 
