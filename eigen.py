@@ -1,10 +1,7 @@
-import sympy as sym
-import matplotlib as plot
 import numpy as num
 import time as time
 
 def powerMethod(matrix, matrixSize, initialValue):
-    startTime = time.process_time   
     eigenVector = num.empty((1,matrixSize), float)
     eigenValue = 0
     count = 1
@@ -15,12 +12,17 @@ def powerMethod(matrix, matrixSize, initialValue):
         eigenValue = num.max(eigenVector)
         eigenVector = num.divide(eigenVector, eigenValue)
         count+=1
-    endTime = time.process_time()
-    print("EigenValue is", eigenValue)
-    print("Eigen Vector is")
-    print(eigenVector)
-    print("Convergence speed (Number of iterations):", count)
-    print("Computational Time: ", endTime - startTime)
+    return eigenValue, eigenVector
+
+def powerMethodAnalysis(matrix, matrixSize, initialValue):
+    eigenValue, eigenVector = powerMethod(matrix,matrixSize,initialValue)
+    matrixDeflated = matrix - eigenValue * num.dot(eigenVector, eigenVector.transpose())
+    eigenValue2nd, eigenVector2nd = powerMethod(matrixDeflated, matrixSize, initialValue)
+    convergenceRate = abs(eigenValue/eigenValue2nd)
+    return eigenValue, eigenVector, convergenceRate
+
+
+
 
 matrixSize = int(input("Enter the matrix size: "))
 matrix = num.empty((matrixSize,matrixSize), int)
@@ -43,7 +45,16 @@ initialValue = num.array(entries).reshape(matrixSize,1)
 
 print(initialValue)
 
-powerMethod(matrix,matrixSize,initialValue)
+startTime = time.time()
+eigenValue, eigenVector, convergenceRate = powerMethodAnalysis(matrix,matrixSize,initialValue)
+endTime = time.time()
+
+print("EigenValue is", eigenValue)
+print("Eigen Vector is")
+print(eigenVector)
+print("Rate of Convergence:", convergenceRate)
+print("Computational Time: ", endTime - startTime)
+
 
 
 
