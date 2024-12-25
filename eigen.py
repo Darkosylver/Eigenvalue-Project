@@ -1,17 +1,19 @@
 import numpy as num
 import time as time
 
-def powerMethod(matrix, matrixSize, initialValue):
+def powerMethod(matrix, matrixSize, initialValue, max_iterations=1000, tolerance=1e-10):
     eigenVector = num.empty((1,matrixSize), float)
     eigenValue = 0
     count = 1
-    while not num.array_equal(eigenVector,initialValue):
+    while not num.array_equal(eigenVector,initialValue) or count <= max_iterations:
         if count != 1:
             initialValue = eigenVector
         eigenVector = num.dot(matrix,initialValue)
         eigenValue = num.max(eigenVector)
         eigenVector = num.divide(eigenVector, eigenValue)
         count+=1
+        if (num.linalg.norm(eigenVector - initialValue) < tolerance):
+            break
     return eigenValue, eigenVector
 
 def powerMethodAnalysis(matrix, matrixSize, initialValue):
@@ -23,18 +25,18 @@ def powerMethodAnalysis(matrix, matrixSize, initialValue):
 
 def  QRDecomposition(A, size, max_iterations=1000, tolerance=1e-10):
     Ak = A.copy()
-    Q_total = np.eye(size)
+    Q_total = num.eye(size)
 
     for _ in range(max_iterations):
-        Q, R = np.linalg.qr(Ak)
-        Ak = np.dot(R, Q)
-        Q_total = np.dot(Q_total, Q)
+        Q, R = num.linalg.qr(Ak)
+        Ak = num.dot(R, Q)
+        Q_total = num.dot(Q_total, Q)
         
-        off_diagonal_norm = np.linalg.norm(Ak - np.diag(np.diagonal(Ak)))
+        off_diagonal_norm = num.linalg.norm(Ak - num.diag(num.diagonal(Ak)))
         if off_diagonal_norm < tolerance:
             break
 
-    eigenvalues = np.diag(Ak)
+    eigenvalues = num.diag(Ak)
     eigenvectors = Q_total
     return eigenvalues, eigenvectors
 
