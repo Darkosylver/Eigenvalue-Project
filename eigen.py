@@ -20,6 +20,7 @@ def powerMethodAnalysis(matrix, matrixSize, initialValue):
     eigenValue, eigenVector = powerMethod(matrix,matrixSize,initialValue)
     matrixDeflated = matrix - eigenValue * num.dot(eigenVector, eigenVector.transpose())    
     eigenValue2nd, eigenVector2nd = powerMethod(matrixDeflated, matrixSize, initialValue)
+    print("Second largets: ", eigenValue2nd)
     convergenceRate = abs(eigenValue/eigenValue2nd)
     return eigenValue, eigenVector, convergenceRate
 
@@ -37,15 +38,21 @@ def  QRDecomposition(A, size, max_iterations=1000, tolerance=1e-10):
             break
 
     eigenvalues = num.diag(Ak)
+    
+    count = 0
+    convergenceRate = num.empty((1, size-1), float)
+    while count < 4:
+        convergenceRate[0][count] = abs(eigenvalues[count+1]/eigenvalues[count])
+        count+=1
     eigenvectors = Q_total
-    return eigenvalues, eigenvectors
+    return eigenvalues, eigenvectors, convergenceRate
 
 matrixSize = int(input("Enter the matrix size: "))
-matrix = num.empty((matrixSize,matrixSize), int)
+matrix = num.empty((matrixSize,matrixSize), float)
 
 print("Enter each entry in a single line, separate numbers by space: ")
 
-entries = list(map(int, input().split()))
+entries = list(map(float, input().split()))
 
 matrix = num.array(entries).reshape(matrixSize, matrixSize)
 
@@ -74,13 +81,14 @@ print("Computational Time: ", endTime - startTime)
 print("\n\n")
 
 startTime = time.time()
-eigenValue, eigenVector = QRDecomposition(matrix,matrixSize)
+eigenValue, eigenVector, convergenceRate = QRDecomposition(matrix,matrixSize)
 endTime = time.time()
 
 print("QR Decomposition: \n")
 print("EigenValue is", eigenValue)
 print("Eigen Vector is")
 print(eigenVector)
+print("Rate of Convergence:", convergenceRate)
 print("Computational Time: ", endTime - startTime)
 print("\n\n")
 
